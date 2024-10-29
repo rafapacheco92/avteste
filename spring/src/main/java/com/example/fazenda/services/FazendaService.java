@@ -1,6 +1,7 @@
 package com.example.fazenda.services;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,10 +17,10 @@ public class FazendaService {
 
     @Transactional
     public Fazenda create(Fazenda fazenda) throws Exception {
-        if (this.validarFazenda(fazenda)){
+        if (this.validarFazenda(fazenda)) {
             Fazenda fazendaCriado = repository.save(fazenda);
             return fazendaCriado;
-        }else{
+        } else {
             throw new Exception("Erro de validação no cadastro da fazenda");
         }
     }
@@ -35,6 +36,9 @@ public class FazendaService {
 
     @Transactional
     public void delete(Long id) {
+        if (!repository.existsById(id)) {
+            throw new NoSuchElementException("Fazenda não encontrada com ID: " + id);
+        }
         repository.deleteById(id);
     }
 
@@ -49,13 +53,13 @@ public class FazendaService {
 
     public boolean validarFazenda(Fazenda fazenda) {
         return validarString(fazenda.getNome()) &&
-               validarArea(fazenda.getAreaTotal()) &&
-               validarArea(fazenda.getAreaAgricultavel()) &&
-               validarArea(fazenda.getAreaNaoAgricultavel()) &&
-               validarCpf(fazenda.getCpfProprietario()) && 
-               validarAreas(fazenda) &&
-               validarLatitude(fazenda.getLatitude()) &&
-               validarLongitude(fazenda.getLongitude());
+                validarArea(fazenda.getAreaTotal()) &&
+                validarArea(fazenda.getAreaAgricultavel()) &&
+                validarArea(fazenda.getAreaNaoAgricultavel()) &&
+                validarCpf(fazenda.getCpfProprietario()) &&
+                validarAreas(fazenda) &&
+                validarLatitude(fazenda.getLatitude()) &&
+                validarLongitude(fazenda.getLongitude());
     }
 
     private boolean validarString(String nome) {
@@ -66,19 +70,19 @@ public class FazendaService {
         return fazenda.getAreaAgricultavel() + fazenda.getAreaNaoAgricultavel() <= fazenda.getAreaTotal();
     }
 
-    private boolean validarArea(double area) {
-        return area >= 0;
+    private boolean validarArea(Double area) {
+        return area == null || area >= 0; // Permite que a área seja null ou >= 0
     }
 
     private boolean validarCpf(String cpf) {
         return cpf != null && cpf.matches("\\d{11}"); // Exemplo de regex para CPF com 11 dígitos
     }
 
-    private boolean validarLatitude(double latitude){
+    private boolean validarLatitude(double latitude) {
         return latitude >= -90 && latitude <= 90;
     }
 
-    private boolean validarLongitude(double longitude){
+    private boolean validarLongitude(double longitude) {
         return longitude >= -180 && longitude <= 180;
     }
 }
